@@ -1,62 +1,6 @@
 ﻿//复数Complex类
 //后面加 const表示函数不可以修改class的成员
 
-/*➢支持的数据类型
-1、复数：a + bi （a , b均为实数）
-2、实数：a
-3、纯虚数：bi
-支持的操作符  括弧、负号  “+”，“-”，“×”，“÷”, “||”（加，减，乘，除，取模）
-共轭(cjg(Z))
-辐角主值(arg(Z))
-n次幂
-cjg(Z)就是求复数Z的共轭
-arg(Z)就是求复数Z的辐角主值，范围为（-𝜋 − 𝜋]
-Z^n就是求复数Z的n次幂(n为整数)*/
-
-/*• 怎么样算是合法的输入
-• 输入表达式开头结尾
-• 以实数、“|”(取模)、负号、”i”或者左括弧开头，以实数、“|”(取模)、“i”或者右括弧结尾
-• 操作符（加减乘除）
-• 后面可以是实数、“i”、“|”、左括弧，不能是右括弧或者操作符（加减乘除）
-(1+3i) , i+3 , -3+4i , |3+4i|   正确
-• 实数
-• 后面可以是右括弧、“i”、操作符（加减乘除）、“^”，不能是左括弧、“|”或者实数
-如  1+-4+)+9-0   错
-(2i+3)+8(2+3|4i|)错     */
-
-
-/*• i
-• 前面可以加减乘除、实数、右括号(括号内的结果必须是实数)
-• 后面可以是右括弧、操作符（加减乘除）不能是左括弧、”i”、“|”或者实数
-• 左括弧
-• 后面可以是左括弧、实数、“i”，”|”，不可以是右括弧或者加减乘除
-• 右括弧
-• 后面可以是右括弧，”i”、操作符（加减乘除）、”^”，不可以是左括弧或者实
-数
-输入（续）
-(2+3)i  正确 ， (2+8i)i  错
-(2+3i)+i(1+2i)+i|3|+ii    错
-(i+3i)+()+(+3)+(|3+4i|)  错
-(9+(i+3i))( +(2+3)8+(2+3)i错
-*/
-
-/*括弧匹配
-◆ 在输入表达式的任意位置 左括弧个数>=右括弧个数
-◆ 对于整个输入表达式，左括弧个数=右括弧个数
-• 这个符号有点特别 ‘-’
-◆ 有时为负号有时为减号
-◆ 为负号的情况
-1. 位于表达式开头
-2. 前面是左括弧
-•“i”和“1i”是等同的，都是合法的
-• n次幂的求解中，n是整数，可以是正数或负数*/
-
-/*运算符优先级 (高到低）
-括弧
-负号 ，取模, cjg, arg
-N次幂
-乘除
-加减*/
 
 #ifndef CPX
 #define CPX
@@ -65,6 +9,7 @@ N次幂
 #include<stack>
 #include<string>
 #include<cstdlib>
+#include<cctype>
 using namespace std;
 class Complex{
 private:
@@ -87,6 +32,18 @@ public:
 		double r = c.real * c.real + c.imag * c.imag;
 		return Complex((real * c.real + imag * c.imag) / r, (imag * c.real - real * c.imag) / r);
 	}
+	bool operator==(Complex& c)const {
+		if (c.real == real && c.imag == imag)return true;
+		else return false;
+	}
+	friend ostream &operator<<(ostream& out,const Complex&c){
+		out << "\n>>>  结果是：";
+		if (c.imag == 0)out <<c. real;
+		else if (c.real == 0)out << c.imag << "i";
+		else if (c.imag > 0)out <<c.real << "+" << c.imag << "i";
+		else out << c.real << c.imag << "i";
+		return out;
+	}
 	//模长
 	double module() const {
 		return sqrt(real * real + imag * imag);
@@ -103,7 +60,7 @@ public:
 		else if (real > 0 && imag < 0)return atan(imag / real);
 	}
 	//共轭
-	Complex conj() const {
+	Complex cjg() const {
 		return Complex(real, -imag);
 	}
 	//乘方
@@ -113,22 +70,22 @@ public:
 		return Complex(pow(m, n) * cos(a * n), pow(m, n) * sin(a * n));
 	}
 
-	Complex calculate(Complex c1, Complex c2,char op) {
+	Complex calcu(Complex c1, Complex c2,char op) {
 		if (op == '+') {
-			return c1 + c2;
+			return c1.operator+(c2);
 		}
 		else if (op == '-') {
-			return c1 - c2;
+			return c1.operator-(c2);
 		}
 		else if (op == '*') {
-			return c1 * c2;
+			return c1.operator*(c2);
 		}
 		else if (op == '/') {
-			return c1 / c2;
+			return c1.operator/(c2);
 		}
-		/*else if (op == '^') {
-			return c1.power(c2.real);
-		}*/
+		else if (op == '^') {
+			return c1.operator^(c2.real);
+		}
 		else if (op == '|') {
 			return Complex(c1.module(), 0);
 		}
@@ -139,7 +96,7 @@ public:
 			return c1.arg();
 		}
 		else if (op == 'c') {
-			return c1.conj();
+			return c1.cjg();
 		}
 	}
 	int priority(char c) {
@@ -161,87 +118,92 @@ public:
 	}
 
 	//逆波兰运算
-	Complex calcu(string s) {
-		stack<Complex>cpxstk;
-		stack<char>opstk;
-		for (int i = 0; i < s.size(); i++) {
-			if (s[i] == ' ') {
-				continue;
+	Complex calculate(string s) {
+		stack<char> op;
+		stack<Complex> num;
+		for (int i = 0; i < s.size();) {
+			if (isdigit(s[i])) {
+				int j = i + 1;
+				while (isdigit(s[j]) || s[j] == '.')j++;
+				string str = s.substr(i, j - i);
+				num.push(Complex(atof(str.c_str()), 0));
+				i = j;
+			}
+			else if (s[i] == 'i') {
+				num.push(Complex(0, 1));
+				i++;
+			}
+			else if (s[i] == 'a') {
+				op.push('a');
+				i++;
+			}
+			else if (s[i] == 'c') {
+				op.push('c');
+				i++;
+			}
+			else if (s[i] == '|') {
+				op.push('|');
+				i++;
 			}
 			else if (s[i] == '(') {
-				opstk.push(s[i]);
+				op.push('(');
+				i++;
 			}
 			else if (s[i] == ')') {
-				while (opstk.top() != '(') {
-					Complex c2 = cpxstk.top();
-					cpxstk.pop();
-					Complex c1 = cpxstk.top();
-					cpxstk.pop();
-					char op = opstk.top();
-					opstk.pop();
-					cpxstk.push(calculate(c1, c2, op));
+				while (op.top() != '(') {
+					Complex c2 = num.top();
+					num.pop();
+					Complex c1 = num.top();
+					num.pop();
+					num.push(calcu(c1, c2, op.top()));
+					op.pop();
 				}
-				opstk.pop();
+				op.pop();
+				i++;
 			}
-			else if (s[i] == '+' || s[i] == '-') {
-				while (!opstk.empty() && opstk.top() != '(') {
-					Complex c2 = cpxstk.top();
-					cpxstk.pop();
-					Complex c1 = cpxstk.top();
-					cpxstk.pop();
-					char op = opstk.top();
-					opstk.pop();
-					cpxstk.push(calculate(c1, c2, op));
+			else if (s[i] == '+' || s[i] == '-' || s[i] == '*' || s[i] == '/' || s[i] == '^') {
+				while (!op.empty() && priority(s[i]) <= priority(op.top())) {
+					Complex c2 = num.top();
+					num.pop();
+					Complex c1 = num.top();
+					num.pop();
+					num.push(calcu(c1, c2, op.top()));
+					op.pop();
 				}
-				opstk.push(s[i]);
+				op.push(s[i]);
+				i++;
 			}
-			else if (s[i] == '*' || s[i] == '/') {
-				while (!opstk.empty() && (opstk.top() == '*' || opstk.top() == '/')) {
-					Complex c2 = cpxstk.top();
-					cpxstk.pop();
-					Complex c1 = cpxstk.top();
-					cpxstk.pop();
-					char op = opstk.top();
-					opstk.pop();
-					cpxstk.push(calculate(c1, c2, op));
-				}
-				opstk.push(s[i]);
-			}
-			else if (s[i] == '^') {
-				opstk.push(s[i]);
-			}
-			else {
-				string temp;
-				while (s[i] >= '0' && s[i] <= '9' || s[i] == '.') {
-					temp += s[i];
-					i++;
-				}
-				i--;
-				cpxstk.push(Complex(atof(temp.c_str())));
-			}
-
+			else i++;
 		}
+		while (!op.empty()) {
+			Complex c2 = num.top();
+			num.pop();
+			Complex c1 = num.top();
+			num.pop();
+			num.push(calcu(c1, c2, op.top()));
+			op.pop();
+		}
+		return num.top();
 	}
 
-	void display() const {
+	void display() const {//可能无用
+		cout << "\n>>>  结果是：";
 		if (real == 0 && imag == 0) {
-			cout << 0;
+			cout << 0<<endl;
 		}
 		else if (real == 0) {
-			cout << imag << "i";
+			cout << imag << "i"<<endl;
 		}
 		else if (imag == 0) {
-			cout << real;
+			cout << real<<endl;
 		}
 		else {
-			cout << real << "+" << imag << "i";
+			cout << real << "+" << imag << "i"<<endl;
 		}
 	}
 
 	//析构
-	~Complex() {
-		delete this;
-	}
+	~Complex() {};
 	
 };
 

@@ -86,12 +86,12 @@ public:
 		else if (op == '^') {
 			return c1.operator^(c2.real);
 		}
-		else if (op == '|') {
+		else if (op == 'm') {
 			return Complex(c1.module(), 0);
 		}
-		else if (op == 'i') {
+		/*else if (op == 'i') {
 			return Complex(0, 1);
-		}
+		}*/
 		else if (op == 'a') {
 			return c1.arg();
 		}
@@ -121,69 +121,19 @@ public:
 	Complex calculate(string s) {
 		stack<char> op;
 		stack<Complex> num;
-		for (int i = 0; i < s.size();) {
+		for (int i = 0; i < s.size(); i++) {
 			if (isdigit(s[i])) {
-				int j = i + 1;
-				while (isdigit(s[j]) || s[j] == '.')j++;
-				string str = s.substr(i, j - i);
-				num.push(Complex(atof(str.c_str()), 0));
-				i = j;
-			}
-			else if (s[i] == 'i') {
-				num.push(Complex(0, 1));
-				i++;
-			}
-			else if (s[i] == 'a') {
-				op.push('a');
-				i++;
-			}
-			else if (s[i] == 'c') {
-				op.push('c');
-				i++;
-			}
-			else if (s[i] == '|') {
-				op.push('|');
-				i++;
-			}
-			else if (s[i] == '(') {
-				op.push('(');
-				i++;
-			}
-			else if (s[i] == ')') {
-				while (op.top() != '(') {
-					Complex c2 = num.top();
-					num.pop();
-					Complex c1 = num.top();
-					num.pop();
-					num.push(calcu(c1, c2, op.top()));
-					op.pop();
+				string str;
+				while (isdigit(s[i]) || s[i] == '.') {
+					str += s[i];
+					i++;
 				}
-				op.pop();
-				i++;
+				double d = atof(str.c_str());
+				num.push(Complex(d, 0));
 			}
-			else if (s[i] == '+' || s[i] == '-' || s[i] == '*' || s[i] == '/' || s[i] == '^') {
-				while (!op.empty() && priority(s[i]) <= priority(op.top())) {
-					Complex c2 = num.top();
-					num.pop();
-					Complex c1 = num.top();
-					num.pop();
-					num.push(calcu(c1, c2, op.top()));
-					op.pop();
-				}
-				op.push(s[i]);
-				i++;
-			}
-			else i++;
+			
 		}
-		while (!op.empty()) {
-			Complex c2 = num.top();
-			num.pop();
-			Complex c1 = num.top();
-			num.pop();
-			num.push(calcu(c1, c2, op.top()));
-			op.pop();
-		}
-		return num.top();
+	return num.top();
 	}
 
 	void display() const {//可能无用

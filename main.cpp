@@ -34,9 +34,14 @@ bool examination(string s) {
 			error(s, i+1);
 			return 0;
 		}
-		else if (s[i] == '.' && i < s.size() - 1 && i>0 && !isdigit(s[i + 1]) && !isdigit(s[i - 1])) {
+		else if (s[i] == '.' && i < s.size() - 1 && i>0 &&( !isdigit(s[i + 1]) || !isdigit(s[i - 1]))) {
 			cout << "错误：小数点位置错误";
 			error(s, i);
+			return 0;
+		}
+		else if (s[0] == '.') {
+			cout << "错误：小数点位置错误";
+			error(s, 0);
 			return 0;
 		}
 		else if (i < s.size() - 2 && s[i] == 'i' && s[i + 1] == ')' && s[i + 2] == 'i') {
@@ -86,7 +91,25 @@ bool examination(string s) {
 		}
 	return 1;
 }
-
+// 处理字符串，使 arg 等变为操作符
+string deal(string s) {
+	while (s.find("arg") != -1) {
+		int pos = s.find("arg");
+		s.replace(pos, 3, "a");
+	}
+	while (s.find("cjg") != -1) {
+		int pos = s.find("cjg");
+		s.replace(pos, 3, "c");
+	}
+	while (s.find("|") != -1) {
+		int pos = s.find("|");
+		pos=s.find("|",pos+1);
+		s.replace(pos, 1, ")");
+		pos = s.find("|");
+		s.replace(pos, 1, "m(");
+	}
+	return s;
+}
 
 void oper() {
 	string s;
@@ -107,6 +130,7 @@ void oper() {
 		}
 		bool exam=examination(s);
 		if (s != "quit" && exam) {
+			s = deal(s);
 			cout<<c.calculate(s);
 			//c.display();
 		}

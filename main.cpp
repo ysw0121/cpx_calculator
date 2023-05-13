@@ -22,11 +22,19 @@ void error(string s, int errpos) {
 
 bool examination(string s) {
 	int cnt = 0;
-	//   i|3| ，|+……有待讨论
+	int cntl = 0;
+	
 	for (int i = 0; i < s.size(); i++) {
+		
 		if (!isdigit(s[i]) && s[i] != 'a' && s[i] != 'r' && s[i] != 'g' && s[i] != 'i' && s[i] != 'c' && s[i] != 'j' && s[i] != '+' && s[i] != '-' && s[i] != '*' && s[i] != '/' && s[i] != '^' && s[i] != '|' && s[i] != '(' && s[i] != ')' && s[i] != '.') {
 			cout << "错误：不是可执行的字符：";
 			error(s, i);
+			return 0;
+		}
+		
+		else if ((s[0] == '+' || s[0] == '*' || s[0] == '/'||isalpha(s[0])) && isdigit(s[1])&&s.size()>1) {
+			cout << "错误：符号错误：";
+			error(s, 0);
 			return 0;
 		}
 		else if (i<s.size()-1&&(s[i]=='+'||s[i]=='-'||s[i]=='*'||s[i]=='/')&&(s[i+1]==')'|| s[i+1] == '+' || s[i+1] == '-' || s[i+1] == '*' || s[i+1] == '/')) {
@@ -54,23 +62,58 @@ bool examination(string s) {
 			error(s, i + 1);
 			return 0;
 		}
-		
-		else if ((i < s.size() - 1) && s[i] == '(' && (s[i + 1] == ')' || s[i + 1] == '+' || s[i + 1] == '*' || s[i + 1] == '/')) {
+		else if (i < s.size() - 1 && isdigit(s[i]) && (s[i + 1] == '|' || s[i + 1] == '(')) {
+			cout << "错误：实数后面不能是该符号：";
+			error(s, i + 1);
+			return 0;
+		}
+		else if (s[i] == '|') {
+			cntl++;
+			if (i != 0) {
+				if ((isdigit(s[i - 1])||s[i-1]=='i') && cntl % 2 == 1) {
+					cout << "错误：后面不能有 “|”：";
+					error(s, i );
+					return 0;
+				}
+				else if (((i < s.size() - 1)) && cntl % 2 == 0 && (s[i + 1] == 'i' || isdigit(s[i + 1]))) {
+					cout << "错误：“|”后面不能再加数：";
+					error(s, i + 1);
+					return 0;
+				}
+				else if (s[i - 1] == '|' && cntl % 2 == 0) {
+					cout << "错误：不能为空括号：";
+					error(s, i );
+					return 0;
+				}
+				else if( (i<s.size() -1)&&(s[i + 1] == '+' || s[i + 1] == '*' || s[i + 1] == '/' || s[i + 1] == '^' || s[i + 1] == '|' || s[i + 1] == ')')&&cntl%2==1){
+					cout << "错误：符号位置错误：";
+					error(s, i + 1);
+					return 0;
+				}
+			}
+		}
+
+		else if (((i < s.size() - 1)) && s[i] == '(' && (s[i + 1] == ')' || s[i + 1] == '+' || s[i + 1] == '*' || s[i + 1] == '/')) {
 			cout << "错误：“(” 后面不能是该符号：";
 			error(s, i + 1);
 			return 0;
 		}
-		else if (i < s.size() - 2 && s[i] == '/' && s[i + 1] == '0' && s[i + 2] != '.') {
+		else if (((i < s.size() - 2)) && s[i] == '/' && s[i + 1] == '0' && s[i + 2] != '.') {
 			cout << "错误：除数不能为 0！：";
 			error(s, i + 1);
 			return 0;
 		}
-		else if (s[s.size() - 2] == '/' && s[s.size() - 1] == '0') {
+		else if ((((i < s.size() - 1))) && s[i] == '^' && (s[i + 1] == '-' || s[i + 1] == '+' || s[i + 1] == '*' || s[i + 1] == '/' || s[i + 1] == '^' || s[i + 1] == 'a' || s[i + 1] == 'c' || s[i + 1] == 'r' || s[i + 1] == 'g' || s[i + 1] == 'j' || s[i + 1] == ')')) {
+			cout << "错误：“^”后面不能是该符号：";
+			error(s, i + 1);
+			return 0;
+		}
+		else if (((s.size()>=2))&&s[s.size() - 2] == '/' && s[s.size() - 1] == '0') {
 			cout << "错误：除数不能为 0！：";
 			error(s,s.size()-1);
 			return 0;
 		}
-		else if ((i < s.size() - 1) && s[i] == ')' && (s[i + 1] == '(' || isdigit(s[i + 1]) ) ){
+		else if (((i < s.size() - 1)) && s[i] == ')' && (s[i + 1] == '(' || isdigit(s[i + 1]) ) ){
 			cout << "错误：“)” 后面不能是该符号：";
 			error(s, i + 1);
 			return 0;
@@ -89,10 +132,23 @@ bool examination(string s) {
 			error(s, s.find("("));
 			return 0;
 		}
+	if (cntl % 2 == 1) {
+		cout << "错误：括号不匹配：";
+		error(s, s.find("|"));
+		return 0;
+	}
+	if (!isdigit(s[s.size() -1]) && s[s.size() - 1] != 'i' && s[s.size() - 1] != '|' && s[s.size() - 1] != ')') {
+		cout << "错误：表达式不完整：";
+		error(s, s.size() - 1);
+		return 0;
+	}
+
 	return 1;
 }
 // 处理字符串，使 arg 等变为操作符
 string deal(string s) {
+	if(s[0]=='-')s.insert(0, "0");
+
 	while (s.find("arg") != -1) {
 		int pos = s.find("arg");
 		s.replace(pos, 3, "a");
@@ -101,13 +157,53 @@ string deal(string s) {
 		int pos = s.find("cjg");
 		s.replace(pos, 3, "c");
 	}
+	int num = 0;
+	for (int i = 0; i < s.size(); i++) {
+		if (s[i] == '|') {
+			num++;
+			if (num % 2 == 1) {
+				if (i < s.size() - 1) {
+					if (s[i + 1] == '-' ) {
+						s.insert(i + 1, "0");
+					}
+				}
+				
+				if (i > 0) {
+					if (s[i - 1] == ')' ) {
+						s.insert(i, "*");
+					}
+				}
+				
+			}
+		}
+	}
+
 	while (s.find("|") != -1) {
 		int pos = s.find("|");
+		s.replace(pos, 1, "m(");
 		pos=s.find("|",pos+1);
 		s.replace(pos, 1, ")");
-		pos = s.find("|");
-		s.replace(pos, 1, "m(");
 	}
+	/*for (int i = 0; i < s.size(); i++) {
+		if (s[i] == 'i') {
+			int pos = i;
+		    if (pos != 0 && (s[pos - 1] == ')' || isdigit(s[pos - 1]))) {
+				s.replace(pos, 1, "*i");
+			}
+			else {
+				s.replace(pos, 1, "i");
+			}
+		}
+	}*/
+
+	for (int i = 0; i < s.size(); i++) {
+		if( i<s.size() - 1){
+			if (s[i] == '(' && s[i + 1] == '-') {
+				s.insert(i+1,"0");
+			}
+		}
+	}
+	
 	return s;
 }
 
@@ -131,8 +227,9 @@ void oper() {
 		bool exam=examination(s);
 		if (s != "quit" && exam) {
 			s = deal(s);
+			cout << s;
 			cout<<c.calculate(s);
-			//c.display();
+			//cout << c;
 		}
 	}
 	cout << "-------------------------------欢迎下次使用-----------------------------" << endl;

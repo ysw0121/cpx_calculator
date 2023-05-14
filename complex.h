@@ -4,6 +4,7 @@
 
 #ifndef CPX
 #define CPX
+//#define debug//断点
 #include <iostream>
 #include<cmath>
 #include<stack>
@@ -12,11 +13,21 @@
 #include<cstdlib>
 #include<cctype>
 #include <stdexcept>
+#include<iomanip>
 using namespace std;
 class Complex{
 private:
 	double real;
-	double imag;
+	double imag; 
+	
+	static int num_of_inte(double r) {
+		int cnt = 0;
+		while (r > 1) {
+			r /= 10;
+			cnt++;
+		}
+		return cnt;
+	}
 
 public:
 	Complex(double r = 0.0, double i = 0.0) : real(r), imag(i) {}
@@ -36,9 +47,9 @@ public:
 			if (r== 0)throw runtime_error("错误：除数不能为0");
 		}
 		catch (runtime_error err) {
-			printf("\n\033[1;4;5;31m%s\033[0m", err.what());
+			printf("\033[1;4;5;31m%s\033[0m", err.what());
 			cout << endl;
-			return Complex(INFINITY,INFINITY);
+			return Complex(NAN,NAN);
 		}
 		Complex res = Complex((real * c.real + imag * c.imag) / r, (imag * c.real - real * c.imag) / r);
 		return res;
@@ -47,13 +58,34 @@ public:
 		if (c.real == real && c.imag == imag)return true;
 		else return false;
 	}
-	friend ostream &operator<<(ostream& out,const Complex&c){
-		out << "\n>>>  结果是：";
-		if (c.imag == 0)out <<c. real;
-		else if (c.real == 0)out << c.imag << "i";
-		else if (c.imag > 0&&c.real!=0)out <<c.real << "+" << c.imag << "i";
-		else out << c.real << c.imag << "i";
-		return out;
+
+	
+	friend ostream &operator<<(ostream& out,const Complex &c){
+		if (!isnan(c.real) && !isnan(c.imag)) {
+			out << "\n>>>  结果是：";
+
+			if (c.imag == 0)out << setprecision(num_of_inte(c.real) + 6) << c.real;
+			else if (c.real == 0) {
+				if (c.imag != 1 && c.imag != -1)out << setprecision(6 + num_of_inte(c.imag)) << c.imag << "i";
+				else if (c.imag == 1) out << setprecision(6) << "i";
+				else if (c.imag == -1)out << setprecision(6) << "-i";
+			}
+			else if (c.imag > 0 && c.real != 0) {
+				if (c.imag != 1)out << setprecision(6 + num_of_inte(c.real)) << c.real << "+" << setprecision(6 + num_of_inte(c.imag)) << c.imag << "i";
+				else out << setprecision(6 + num_of_inte(c.real)) << c.real << "+i";
+			}
+
+			else {
+				if (c.imag != -1)out << setprecision(6 + num_of_inte(c.real)) << c.real << setprecision(6 + num_of_inte(c.imag)) << c.imag << "i";
+				else out << setprecision(6 + num_of_inte(c.real)) << c.real << "-i";
+			}
+			return out;
+		}
+		else {
+			out << "\n>>>  结果是：";
+			out << "NAN";
+			return out;
+		}
 	}
 	//模长
 	double module() const {
@@ -101,9 +133,6 @@ public:
 		else if (op == 'm') {
 			return Complex(c1.module(), 0);
 		}
-		/*else if (op == 'i') {
-			return Complex(0, 1);
-		}*/
 		else if (op == 'a') {
 			return Complex(c1.arg(),0);
 		}
@@ -111,6 +140,7 @@ public:
 			return c1.cjg();
 		}
 	}
+
 	int priority(char c) {
 		int i;
 		switch (c) {
@@ -128,123 +158,224 @@ public:
 		}
 		return i;
 	}
+
 	bool isoperator(char c) {
 		if (c == '+' || c == '-' || c == '*' || c == '/' || c == '^' || c == 'a' || c == 'c' || c == 'm' || c == '(' || c == ')')return 1;
 		else return 0;
 	}
+
 	//逆波兰运算
+
 	Complex calculate(string s) {
 		stack<char>op;
 		stack<Complex> num;
-		for (int i = 0; i <s.size();i++) {
-				if (isdigit(s[i])) {
-					string str;
-					while (isdigit(s[i]) || s[i] == '.') {
-						str += s[i];
-						i++;
+		for (int i = 0; i < s.size(); i++) {
+			if (isdigit(s[i])) {
+				string str;
+				while (isdigit(s[i]) || s[i] == '.') {
+					str += s[i];
+					i++;
+				}
+				double d = atof(str.c_str());
+				if (i < s.size()) {
+					if (s[i] != 'i') { num.push(Complex(d, 0)); i--; continue; }
+					else if (s[i] == 'i') {
+						num.push(Complex(0, d)); continue;
 					}
-					double d = atof(str.c_str());
-					//if(s[0]=='-')d=-d;
-					if (i < s.size()) {
-						if (s[i] != 'i')num.push(Complex(d, 0));
-						else if (s[i] == 'i')num.push(Complex(0, d));
-					}
-					else num.push(Complex(d, 0));//末尾进去
+				}
+				else {
+					num.push(Complex(d, 0)); i--; continue;
+				}//末尾进去
 
+			}
+			if (i < s.size() && i>0) {
+				if (s[i] == 'i' && !isdigit(s[i - 1])) {
+					num.push(Complex(0, 1));
+					continue;
 				}
-				if (i < s.size() && i>0) {
-					if (s[i] == 'i' && !isdigit(s[i - 1])) {
-						num.push(Complex(0, 1));
-					}
-				}
-				if (i == 0 && s[i] == 'i')num.push(Complex(0, 1)), i++;
-				if (isoperator(s[i])) {//应该不要边读取边处理，有待修改
-					if (num.size() >= 2) {
-						if (priority(s[i])<=priority(op.top())) {
-							if (op.top() != '(' && op.top() != ')') {
-								Complex c1 = num.top();
-								//cout << c1;
-								num.pop();
-								Complex c2 = num.empty()?Complex(0,0):num.top();
-								//cout << c2;
-								num.pop();
-								Complex c3 = calcu(c2, c1, op.top());
-								num.push(c3);
-								op.pop();
-							}
-							else if (op.top() == ')') {
-								
-								while (op.top() != '(') {
-									if(op.top()==')')op.pop();
-									Complex c1 = num.top();
-									//cout << c1;
-									num.pop();
-									Complex c2 = num.empty() ? Complex(0, 0) : num.top();
-									//cout << c2;
-									num.pop();
-									Complex c3 = calcu(c2, c1, op.top());
-									num.push(c3);
-									op.pop();
-								}
-								if(op.top() == '(')op.pop();
-							}
-						}
-					}
-					op.push(s[i]);
-				}
-		}
+			}
+			if (i == 0 && s[i] == 'i')num.push(Complex(0, 1));
+			
+			if (isoperator(s[i])) {
+				if (op.empty()&&s[i]!='(') { op.push(s[i]); continue; }
 
-	//最后的处理
-			while(!op.empty()) {
-				//if (priority(op.top()) == 1 || priority(op.top()) == 2 || priority(op.top()) == 3) {
-				if (op.top() != '(' && op.top() != ')') {
-					Complex c1 = num.top();
-					//cout << c1;
-					num.pop();
-					Complex c2 = num.top();
-					//cout << c2;
-					num.pop();
-					Complex c3 = calcu(c2, c1, op.top());
-					num.push(c3);
-					op.pop();
-					//}
+				if (priority(s[i]) == 4) { op.push(s[i]); continue; }
+
+				if (s[i] == '(') {
+					op.push(s[i]); continue;
 				}
-				else if (op.top() == ')') {
-					op.pop();
-					while (op.top() != '(') {
+				else if (!op.empty() && s[i] != ')' && priority(s[i]) > priority(op.top())) {
+					op.push(s[i]); 
+					continue;
+				}
+				else if (!op.empty() && priority(s[i]) <= priority(op.top()) && s[i + 1] != '(' && op.top() != '(') {
+					while (!op.empty() && priority(s[i]) <= priority(op.top()) && op.top() != '(') {
 						Complex c1 = num.top();
-						//cout << c1;
+#ifdef debug
+						cout << c1;//t
+#endif
 						num.pop();
 						Complex c2 = num.top();
-						//cout << c2;
+#ifdef debug
+						cout << c2;//t
+#endif
 						num.pop();
 						Complex c3 = calcu(c2, c1, op.top());
+#ifdef debug
+						cout << c3;//t
+#endif
 						num.push(c3);
 						op.pop();
 					}
-					if (op.top() == '(')op.pop();
+					if (op.empty()) {
+						op.push(s[i]);
+						continue;
+					}
+					if (!op.empty() && op.top() == '(')op.push(s[i]);
 				}
-				else if(op.top()=='(') op.pop();
+
+				else if (!op.empty() && priority(s[i]) <= priority(op.top()) && s[i + 1] != '(' && op.top() == '('&&s[i]!=')') {
+					if(s[i]!=')')op.push(s[i]);
+					continue;
+				}
+
+				else if (i < s.size() - 1 && s[i] != '(' && s[i] != ')' && s[i + 1] == '(')op.push(s[i]);
+
+				//  warning: 此处堆积 ,  (阿门……)
+
+				else if (s[i] == ')') {
+					if (!op.empty() && op.top() == '(') {
+						op.pop();
+
+						if(!op.empty() && priority(op.top()) == 4) {
+							Complex c1 = num.top();
+#ifdef debug
+							cout << c1;//t
+#endif
+							num.pop();
+							Complex c3 = calcu(c1,c1, op.top());
+#ifdef debug
+							cout << c3;//t
+#endif
+							num.push(c3);
+							op.pop();
+							if (!op.empty() && op.top() == '(') {
+								op.pop();
+								if (!op.empty() && priority(op.top()) == 4) {
+									op.push('(');
+									continue;
+								}
+								else if(((op.empty()))||(!op.empty() && priority(op.top()) != 4)){
+									op.push('(');
+									continue;
+								}
+							}
+						}
+						
+					}
+					
+					else if (!op.empty() && priority(op.top()) < 4) {
+					if(!op.empty() && op.top() != '(') {
+						Complex c1 = num.top();
+#ifdef debug
+						cout << c1;//t
+#endif
+						num.pop();
+						Complex c2 = num.top();
+#ifdef debug
+						cout << c2;//t
+#endif
+						num.pop();
+						Complex c3 = calcu(c2, c1, op.top());
+#ifdef debug
+						cout << c3;//t
+#endif
+						num.push(c3);
+						op.pop();
+					}
+				}
+					 if (!op.empty() && op.top() == '(') {
+						op.pop();
+						if (!op.empty() && priority(op.top()) != 4) {
+							op.push('(');
+							continue;
+						}
+						if(!op.empty() && priority(op.top()) == 4) {
+							Complex c1 = num.top();
+#ifdef debug
+							cout << c1;//t
+#endif
+							num.pop();
+							Complex c3 = calcu(c1, Complex(0, 1), op.top());
+#ifdef debug
+							cout << c3;//t
+#endif
+							num.push(c3);
+							op.pop();
+							if (!op.empty() && op.top() == '(') {
+								op.pop();
+								if (!op.empty() && priority(op.top()) == 4) {
+									op.push('(');
+									continue;
+								}
+								else if (((op.empty())) || (!op.empty() && priority(op.top()) != 4)){
+									op.push('(');
+									continue;
+								}
+							}
+						}
+					}
+				}
+
+				//end-----
+
+			}
+
+		}
+
+	//最后的处理
+			while(!op.empty()&&num.size()>=2) {
+				if (priority(op.top()) == 1 || priority(op.top()) == 2 || priority(op.top()) == 3) {
+					Complex c1 = num.top();
+#ifdef debug
+cout << c1;
+#endif
+					num.pop();
+					Complex c2 = num.top();
+#ifdef debug
+cout << c2;
+#endif
+					num.pop();
+					Complex c3 = calcu(c2, c1, op.top());
+#ifdef debug
+					cout << c3;//t
+#endif
+					num.push(c3);
+					op.pop();
+
+				}
+				else if(!op.empty() &&priority(op.top())==4){
+					Complex c1 = num.top();
+#ifdef debug
+cout << c1;
+#endif
+					num.pop();
+					Complex c3 = calcu(c1, c1, op.top());
+#ifdef debug
+					cout << c3;//t
+#endif
+					num.push(c3);
+					op.pop();
+				}
+				if(!op.empty()&&op.top()=='(') op.pop();
 			}
 		
 	return num.top();
 	}
 
-	//可能无用
-	void display() const {
-		cout << "\n>>>  结果是：";
-		if (real == 0 && imag == 0) {
-			cout << 0<<endl;
-		}
-		else if (real == 0) {
-			cout << imag << "i"<<endl;
-		}
-		else if (imag == 0) {
-			cout << real<<endl;
-		}
-		else {
-			cout << real << "+" << imag << "i"<<endl;
-		}
+	bool inf(Complex c) {
+		if (c.real == NAN|| c.imag ==NAN)return 1;
+		else return 0;
 	}
 
 	//析构

@@ -1,4 +1,7 @@
+//#define debug
+#define RECORD
 #include<iostream>
+#include<fstream>
 #include"complex.h"
 using namespace std;
 
@@ -12,6 +15,9 @@ void help() {
 	cout << "请注意：“）”后面可以是“）”，”i”、操作符（加减乘除）、”^”，不可以是“（”或者实数 "<<endl;
 	cout << "-----------------------------------------------------------------------------------------------------------------------------" << endl;
 }
+
+
+
 
 void error(string s, int errpos) {
 	int i = errpos;
@@ -62,7 +68,7 @@ bool examination(string s) {
 			error(s, i + 1);
 			return 0;
 		}
-		else if (i < s.size() - 1 && isdigit(s[i]) && (s[i + 1] == '|' || s[i + 1] == '(')) {
+		else if (i < s.size() - 1 && isdigit(s[i]) &&  s[i + 1] == '(') {
 			cout << "错误：实数后面不能是该符号：";
 			error(s, i + 1);
 			return 0;
@@ -184,22 +190,18 @@ string deal(string s) {
 		pos=s.find("|",pos+1);
 		s.replace(pos, 1, ")");
 	}
-	/*for (int i = 0; i < s.size(); i++) {
-		if (s[i] == 'i') {
-			int pos = i;
-		    if (pos != 0 && (s[pos - 1] == ')' || isdigit(s[pos - 1]))) {
-				s.replace(pos, 1, "*i");
-			}
-			else {
-				s.replace(pos, 1, "i");
-			}
-		}
-	}*/
 
 	for (int i = 0; i < s.size(); i++) {
 		if( i<s.size() - 1){
 			if (s[i] == '(' && s[i + 1] == '-') {
 				s.insert(i+1,"0");
+			}
+		}
+	}
+	for (int i = 0; i < s.size(); i++) {
+		if (i < s.size() - 1) {
+			if (s[i] == ')' && s[i + 1] == 'i') {
+				s.insert(i + 1, "*");
 			}
 		}
 	}
@@ -226,15 +228,29 @@ void oper() {
 		}
 		bool exam=examination(s);
 		if (s != "quit" && exam) {
+			string tem = s;
 			s = deal(s);
-			cout << s;
+#ifdef debug
+			cout << s;//test
+#endif
 			cout<<c.calculate(s);
-			//cout << c;
+#ifdef RECORD
+			bool istr = c.calculate(s).inf(c.calculate(s));
+			if (!istr) {
+				ofstream fout("record.txt", ios::app);
+				if (!fout) {
+					cerr << "open error!" << endl;
+					exit(1);
+				}
+				else fout << tem << "=" << c.calculate(s) << endl;
+				fout.close();
+			}
+			#endif
 		}
 	}
 	cout << "-------------------------------欢迎下次使用-----------------------------" << endl;
-	cin.ignore(100, '\n');
 	cout << "\n请输入任意字符结束程序！" << endl;
+	//cin.ignore(100, '\n');
 	cin.get();
 }
 

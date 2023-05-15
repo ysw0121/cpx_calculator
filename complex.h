@@ -65,17 +65,17 @@ public:
 			out << "\n>>>  结果是：";
 
 			if (abs(c.imag) <= 2e-14)out << setprecision(num_of_inte(c.real) + 6) << c.real;
-			else if (c.real>2e-14) {
+			else if (abs(c.real)<=2e-14) {
 				if (c.imag != 1 && c.imag != -1)out << setprecision(6 + num_of_inte(c.imag)) << c.imag << "i";
 				else if (c.imag == 1) out << setprecision(6) << "i";
 				else if (c.imag == -1)out << setprecision(6) << "-i";
 			}
-			else if (c.imag > 2e-14 && c.real> 2e-14) {
+			else if (c.imag > 2e-14 && abs(c.real)> 2e-14) {
 				if (c.imag != 1)out << setprecision(6 + num_of_inte(c.real)) << c.real << "+" << setprecision(6 + num_of_inte(c.imag)) << c.imag << "i";
 				else out << setprecision(6 + num_of_inte(c.real)) << c.real << "+i";
 			}
 
-			else if(c.imag<-2e-14){
+			else if(c.imag<-2e-14 && abs(c.real)> 2e-14){
 				if (c.imag != -1)out << setprecision(6 + num_of_inte(c.real)) << c.real << setprecision(6 + num_of_inte(c.imag)) << c.imag << "i";
 				else out << setprecision(6 + num_of_inte(c.real)) << c.real << "-i";
 			}

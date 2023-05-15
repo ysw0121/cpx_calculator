@@ -1,5 +1,5 @@
 //#define debug
-//#define RECORD
+#define RECORD
 #include<iostream>
 #include<fstream>
 #include"complex.h"

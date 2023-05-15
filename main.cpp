@@ -1,5 +1,5 @@
 //#define debug
-#define RECORD
+//#define RECORD
 #include<iostream>
 #include<fstream>
 #include"complex.h"
@@ -148,6 +148,24 @@ bool examination(string s) {
 		error(s, s.size() - 1);
 		return 0;
 	}
+	int kk = 0,kpos=0;
+	for (int i = 0; i < s.size(); i++) {
+		if (s[i] == '(') {
+			while (s[i] != ')') {
+				i++;
+				if (s[i] == '|') {
+					kk++;
+					kpos = i;
+				}
+			}
+			if (kk % 2 == 1) {
+				cout << "´íÎó£ºÀ¨ºÅ²»Æ¥Åä£º";
+				error(s, kpos);
+				return 0;
+			}
+		}
+	}
+
 
 	return 1;
 }

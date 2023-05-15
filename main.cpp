@@ -202,6 +202,16 @@ string deal(string s) {
 		}
 	}
 
+	for (int i = 0; i < s.size(); i++) {
+		if (isdigit(s[i])) {
+			if((i<s.size()-2)){
+				if (s[i + 1] == 'i' && s[i + 2] == '^') {
+					s.insert(i + 1, "*");
+				}
+			}
+		}
+	}
+
 	while (s.find("|") != -1) {
 		int pos = s.find("|");
 		s.replace(pos, 1, "m(");

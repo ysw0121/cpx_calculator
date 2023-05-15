@@ -64,18 +64,18 @@ public:
 		if (!isnan(c.real) && !isnan(c.imag)) {
 			out << "\n>>>  结果是：";
 
-			if (c.imag == 0)out << setprecision(num_of_inte(c.real) + 6) << c.real;
-			else if (c.real == 0) {
+			if (abs(c.imag) <= 2e-14)out << setprecision(num_of_inte(c.real) + 6) << c.real;
+			else if (c.real>2e-14) {
 				if (c.imag != 1 && c.imag != -1)out << setprecision(6 + num_of_inte(c.imag)) << c.imag << "i";
 				else if (c.imag == 1) out << setprecision(6) << "i";
 				else if (c.imag == -1)out << setprecision(6) << "-i";
 			}
-			else if (c.imag > 0 && c.real != 0) {
+			else if (c.imag > 2e-14 && c.real> 2e-14) {
 				if (c.imag != 1)out << setprecision(6 + num_of_inte(c.real)) << c.real << "+" << setprecision(6 + num_of_inte(c.imag)) << c.imag << "i";
 				else out << setprecision(6 + num_of_inte(c.real)) << c.real << "+i";
 			}
 
-			else {
+			else if(c.imag<-2e-14){
 				if (c.imag != -1)out << setprecision(6 + num_of_inte(c.real)) << c.real << setprecision(6 + num_of_inte(c.imag)) << c.imag << "i";
 				else out << setprecision(6 + num_of_inte(c.real)) << c.real << "-i";
 			}
@@ -180,7 +180,15 @@ public:
 				if (i < s.size()) {
 					if (s[i] != 'i') { num.push(Complex(d, 0)); i--; continue; }
 					else if (s[i] == 'i') {
-						num.push(Complex(0, d)); continue;
+						if (i < s.size() - 1) {
+							if (s[i + 1] == '^') {
+								num.push(Complex(d, 0)); i--; continue;
+							}
+							else {
+								num.push(Complex(0, d)); continue;
+							}
+						}
+						
 					}
 				}
 				else {
@@ -193,6 +201,11 @@ public:
 					num.push(Complex(0, 1));
 					continue;
 				}
+				else if (i<s.size()&&s[i] == 'i' && isdigit(s[i - 1])&&s[i+1]=='^') {
+					num.push(Complex(0, 1));
+					continue;
+				}
+				
 			}
 			if (i == 0 && s[i] == 'i')num.push(Complex(0, 1));
 			

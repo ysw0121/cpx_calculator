@@ -1,0 +1,15 @@
+﻿  main.cpp
+D:\my sln\C++\cpx_calculator\main.cpp(119,22): warning C4267: “参数”: 从“size_t”转换到“int”，可能丢失数据
+D:\my sln\C++\cpx_calculator\main.cpp(138,24): warning C4267: “参数”: 从“size_t”转换到“int”，可能丢失数据
+D:\my sln\C++\cpx_calculator\main.cpp(143,23): warning C4267: “参数”: 从“size_t”转换到“int”，可能丢失数据
+D:\my sln\C++\cpx_calculator\main.cpp(148,24): warning C4267: “参数”: 从“size_t”转换到“int”，可能丢失数据
+D:\my sln\C++\cpx_calculator\main.cpp(177,26): warning C4267: “初始化”: 从“size_t”转换到“int”，可能丢失数据
+D:\my sln\C++\cpx_calculator\main.cpp(181,26): warning C4267: “初始化”: 从“size_t”转换到“int”，可能丢失数据
+D:\my sln\C++\cpx_calculator\main.cpp(216,24): warning C4267: “初始化”: 从“size_t”转换到“int”，可能丢失数据
+D:\my sln\C++\cpx_calculator\main.cpp(218,24): warning C4267: “=”: 从“size_t”转换到“int”，可能丢失数据
+  正在生成代码
+  2 of 405 functions ( 0.5%) were compiled, the rest were copied from previous compilation.
+    0 functions were new in current compilation
+    1 functions had inline decision re-evaluated but remain unchanged
+  已完成代码的生成
+  cpx_calculator.vcxproj -> D:\my sln\C++\cpx_calculator\x64\Release\cpx_calculator.exe
